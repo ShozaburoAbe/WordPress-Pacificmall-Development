@@ -29,9 +29,13 @@ function get_main_title()
 }
 
 // 子ページを取得する関数
-function get_child_pages($number = -1)
+function get_child_pages($number = -1, $specified_id = null)
 {
-	$parent_id = get_the_ID();
+	if (isset($specified_id)) :
+		$parent_id = $specified_id;
+	else :
+		$parent_id = get_the_ID();
+	endif;
 	$args = array(
 		'posts_per_page' => $number,
 		'post_type' => 'page',
@@ -41,4 +45,55 @@ function get_child_pages($number = -1)
 	);
 	$child_pages = new WP_Query($args);
 	return $child_pages;
+}
+
+// アイキャッチ画像を利用できるようにする
+add_theme_support('post-thumbnails');
+
+// トップページのメイン画像用のサイズ指定
+add_image_size('top', 1077, 622, true);
+
+// 地域貢献活動一覧画像用のサイズ設定
+add_image_size('contribution', 577, 280, true);
+
+// トップページの地域貢献活動にて使用している画像用のサイズ指定
+add_image_size('front-contribution', 255, 189, true);
+
+// 企業情報・店舗情報一覧画像用のサイズ設定
+add_image_size('common', 465, 252, true);
+
+// 各ページのメイン画像用のサイズ設定
+add_image_size('detail', 1100, 330, true);
+
+//　検索一覧画像用のサイズ設定
+add_image_size('search', 168, 168, true);
+
+// 各テンプレート事のメイン画像を表示
+function get_main_image()
+{
+	if (is_page()) :
+		return get_the_post_thumbnail('', 'detail'); // '$post->ID'を第一引数に?
+	elseif (is_category('news') || is_singular('post')) :
+		return '<img src="' . get_template_directory_uri() . '/assets/images/bg-page-news.jpg" />';
+	else :
+		return '<img src="' . get_template_directory_uri() . '/assets/images/bg-page-dummy.png" />';
+	endif;
+}
+
+// 特定の記事を抽出する関数
+function get_specific_posts($post_type, $taxonomy = null, $term = null, $number = -1)
+{
+	$args = array(
+		'post_type' => $post_type,
+		'tax_query' => array(
+			array(
+				'taxonomy' => $taxonomy,
+				'filed' => 'slug',
+				'terms' => $term,
+			),
+		),
+		'posts_per_page' => $number,
+	);
+	$specific_posts = new WP_Query($args);
+	return $specific_posts;
 }
